@@ -523,7 +523,6 @@ public static class RagePixelUtil
 		int framesWide = tex.width / importSpriteWidth;
 		int framesHigh = tex.height / importSpriteHeight;
 		int cellCount = framesWide * framesHigh;
-		int oldCellCount = destRow.cells.Length;
 		destRow.Clear();
 		//loop to allocate cell space
 		for(int i = 0; i < cellCount; i++)
