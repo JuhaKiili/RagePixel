@@ -558,7 +558,7 @@ public class RagePixelSpriteEditor : Editor
         
 	public void OnSceneGUI()
 	{
-		InvokeOnSelectedEvent();
+	    InvokeOnSelectedEvent();
 
 		if(!Application.isPlaying)
 		{

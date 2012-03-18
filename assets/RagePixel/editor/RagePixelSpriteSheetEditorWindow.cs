@@ -532,6 +532,7 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 		}
 	}
 
+
 	public void Update()
 	{
 		if(animStripGUI.isDirty || spriteSheetGUI.isDirty)
