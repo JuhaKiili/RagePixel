@@ -563,7 +563,8 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 
 			switch(target)
 			{
-			case SpriteSheetImportTarget.SpriteSheet: {
+			    case SpriteSheetImportTarget.SpriteSheet: 
+                {
 					RagePixelRow row = spriteSheet.AddRow(newKey, importSpriteWidth, importSpriteHeight);
 					row.name = newTexture.name;
 					RagePixelUtil.ImportRowFromSheetTexture(
@@ -577,36 +578,40 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 					animStripGUI.currentCellKey = row.cells[0].key;
 					break;
 				}
-			case SpriteSheetImportTarget.NewSprite:
-				RagePixelRow row = spriteSheet.AddRow(newKey, newTexture.width, newTexture.height);
-				row.InsertCell(0, newKey2);
+                case SpriteSheetImportTarget.NewSprite: 
+                {
+                    RagePixelRow row = spriteSheet.AddRow(newKey, newTexture.width, newTexture.height);
+                    row.InsertCell(0, newKey2);
 
-				spriteSheetGUI.currentRowKey = newKey;
-				animStripGUI.currentCellKey = newKey2;
+                    spriteSheetGUI.currentRowKey = newKey;
+                    animStripGUI.currentCellKey = newKey2;
 
-				RagePixelUtil.RebuildAtlas(spriteSheet, true, "Import texture as new sprite");
+                    RagePixelUtil.RebuildAtlas(spriteSheet, true, "Import texture as new sprite");
 
-				Rect uvs = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
-				RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs);
-				break;
+                    Rect uvs = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
+                    RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs);
+                    break;
+                }
+                case SpriteSheetImportTarget.NewFrame: 
+                {
+                    RagePixelRow row = spriteSheet.GetRow(spriteSheetGUI.currentRowKey);
+                    int index = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetIndex(animStripGUI.currentCellKey) + 1;
+                    row.InsertCell(index, newKey2);
 
-			case SpriteSheetImportTarget.NewFrame:
-				RagePixelRow row2 = spriteSheet.GetRow(spriteSheetGUI.currentRowKey);
-				int index = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetIndex(animStripGUI.currentCellKey) + 1;
-				row2.InsertCell(index, newKey2);
+                    animStripGUI.currentCellKey = newKey2;
 
-				animStripGUI.currentCellKey = newKey2;
+                    RagePixelUtil.RebuildAtlas(spriteSheet, true, "Import texture as new frame");
 
-				RagePixelUtil.RebuildAtlas(spriteSheet, true, "Import texture as new frame");
-
-				Rect uvs2 = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
-				RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs2);
-				break;
-
-			case SpriteSheetImportTarget.Selected:
-				Rect uvs3 = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
-				RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs3);
-				break;
+                    Rect uvs = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
+                    RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs);
+                    break;
+                }
+                case SpriteSheetImportTarget.Selected: 
+                {
+                    Rect uvs = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
+                    RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs);
+                    break;
+                }
 			}
 
 			RagePixelUtil.SaveSpritesheetTextureToDisk(spriteSheet);
