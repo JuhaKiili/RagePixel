@@ -14,6 +14,7 @@ public interface IRagePixel
 	void PlayNamedAnimation(string name, int priority=0);
 	void PlayNamedAnimation(string name, bool forceRestart, int priority=0);
 	void PlayNamedAnimation(string name, bool forceRestart, float delayFirstFrame, int priority=0);
+	bool HasNamedAnimation(string name);
 	bool isPlaying();
 	void StopAnimation();
 	int GetSizeX();

@@ -439,8 +439,6 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 				uvs = new Vector2[quadCount * 4 + edgeQuadCount * 4];
 				colors = new Color[quadCount * 4 + edgeQuadCount * 4];
 
-                    //Debug.Log("verts.length: " + verts.Length);
-
 				uv = currentCell.uv;
 				xMin = uv.xMin;
 				yMin = uv.yMin;
@@ -1069,26 +1067,26 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 				if(frameMode == FrameMode.Range)
 				{
 					return
-								GetCurrentRow().GetIndex(currentCellKey) < GetCurrentRow().cells.Length - 1 &&
-								animationMaxIndex < 0 ||
-								GetCurrentRow().GetIndex(currentCellKey) < animationMaxIndex;
+						GetCurrentRow().GetIndex(currentCellKey) < GetCurrentRow().cells.Length - 1 &&
+						animationMaxIndex < 0 ||
+						GetCurrentRow().GetIndex(currentCellKey) < animationMaxIndex;
 				}
 				else if(frameMode == FrameMode.Sequence)
 				{
 					return
-								animationCurrentFrame >= animationFrames.Length - 1;
+						animationCurrentFrame >= animationFrames.Length - 1;
 				}
 				break;
 			case AnimationMode.PlayOnceReverse:
 				if(frameMode == FrameMode.Range)
 				{
 					return
-							  GetCurrentRow().GetIndex(currentCellKey) > Mathf.Max(animationMinIndex, 0);
+						 GetCurrentRow().GetIndex(currentCellKey) > Mathf.Max(animationMinIndex, 0);
 				}
 				else if(frameMode == FrameMode.Sequence)
 				{
 					return
-								animationCurrentFrame <= 0;
+						animationCurrentFrame <= 0;
 				}
 				break;
 			case AnimationMode.PingPong:
@@ -1097,14 +1095,14 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 					if(frameMode == FrameMode.Range)
 					{
 						return
-							  	GetCurrentRow().GetIndex(currentCellKey) < GetCurrentRow().cells.Length - 1 &&
-							  	animationMaxIndex < 0 ||
-							  	GetCurrentRow().GetIndex(currentCellKey) < animationMaxIndex;
+							GetCurrentRow().GetIndex(currentCellKey) < GetCurrentRow().cells.Length - 1 &&
+							animationMaxIndex < 0 ||
+							GetCurrentRow().GetIndex(currentCellKey) < animationMaxIndex;
 					}
 					else if(frameMode == FrameMode.Sequence)
 					{
 						return
-									animationCurrentFrame >= animationFrames.Length - 1;
+							animationCurrentFrame >= animationFrames.Length - 1;
 					}
 				}
 				else
@@ -1112,12 +1110,12 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 					if(frameMode == FrameMode.Range)
 					{
 						return
-									GetCurrentRow().GetIndex(currentCellKey) > Mathf.Max(animationMinIndex, 0);
+							GetCurrentRow().GetIndex(currentCellKey) > Mathf.Max(animationMinIndex, 0);
 					}
 					else if(frameMode == FrameMode.Sequence)
 					{
 						return
-									animationCurrentFrame <= 0;
+							animationCurrentFrame <= 0;
 					}
 				}
 				break;
@@ -1373,6 +1371,10 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 		}
 	}
 
+	public bool HasNamedAnimation(string name) {
+		return GetCurrentRow().GetAnimationByName(name) != null;
+	}
+
 	public void PlayNamedAnimation(string name, int pri=0)
 	{
 		PlayNamedAnimation(name, false, 0, pri);
@@ -1383,18 +1385,45 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 		PlayNamedAnimation(name, forceRestart, 0, pri);
 	}
 
+	public bool AnimationIsDifferent(RagePixelAnimation a)
+	{
+		if(a.name != currentAnimationName ||
+			 a.mode != animationMode ||
+			 a.frameMode != frameMode) return true;
+		if(a.frameMode == FrameMode.Range)
+		{
+			return
+				animationMinIndex != a.startIndex ||
+				animationMaxIndex != a.endIndex;
+		}
+		else if(a.frameMode == FrameMode.Sequence)
+		{
+			if(a.frames == animationFrames) return false;
+			if(a.frames == null ||
+				 animationFrames == null ||
+				 a.frames.Length != animationFrames.Length) return true;
+			for(int i = 0; i < a.frames.Length; i++)
+			{
+				if(a.frames[i] == animationFrames[i]) return true;
+			}
+		}
+		return true;
+	}
+
 	public void PlayNamedAnimation(string name, bool forceRestart, float delayFirstFrame, int pri=0)
 	{
 		RagePixelAnimation animation = GetCurrentRow().GetAnimationByName(name);
 		if(animation != null)
 		{
-			if((playAnimation == false || forceRestart || animationMinIndex != animation.startIndex || animation.endIndex != animationMaxIndex || currentAnimationName != name) && (pri >= currentAnimationPriority))
+			if((playAnimation == false ||
+				forceRestart ||
+				AnimationIsDifferent(animation) ||
+				AnimationIsOver) &&
+				(pri >= currentAnimationPriority))
 			{
 				currentAnimationName = name;
 				currentAnimationPriority = pri;
 				animationFrames = animation.frames;
-				animationMinIndex = animation.startIndex;
-				animationMaxIndex = animation.endIndex;
 
 				animationMinIndex = Mathf.Clamp(animation.startIndex, 0, GetCurrentRow().cells.Length - 1);
 				animationMaxIndex = Mathf.Clamp(animation.endIndex, animationMinIndex, GetCurrentRow().cells.Length - 1);
@@ -1436,11 +1465,11 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 	public Rect GetRect()
 	{
 		return new Rect(
-            transform.position.x + GetPivotOffset().x,
-            transform.position.y + GetPivotOffset().y,
-            pixelSizeX,
-            pixelSizeY
-            );
+			transform.position.x + GetPivotOffset().x,
+			transform.position.y + GetPivotOffset().y,
+			pixelSizeX,
+			pixelSizeY
+		);
 	}
 
 	public Vector3 GetPivotOffset()
