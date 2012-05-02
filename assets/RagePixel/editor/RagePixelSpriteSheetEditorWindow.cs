@@ -11,6 +11,7 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 	private bool showRangeAnimationsFoldout, showSequenceAnimationsFoldout;
 	private bool showCopyAnimationsFoldout;
 	private bool showImportFoldout;
+	private bool showUpdateFoldout;
 	private Texture2D newTexture;
 	private int importSpriteWidth = 16, importSpriteHeight = 16;
 	private bool importSpriteTopLeft = true;
@@ -21,6 +22,13 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 		NewFrame,
 		NewSprite,
 		SpriteSheet
+	};
+	
+	public enum SpriteSheetUpdateTarget
+	{
+		SelectedSprite = 0,
+		SelectedFrame,
+		AllSprites
 	};
 
 	private RagePixelAnimStripGUI _animStripGUI;
@@ -265,10 +273,14 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
                 EditorGUI.TextField(
                     new Rect(x, y, Mathf.Min(350, Screen.width - x * 2), 16), "Sprite Name", spriteSheet.GetRow(spriteSheetGUI.currentRowKey).name);
 			y += 20;
+			RagePixelCell selectedCell = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey);
 			EditorGUI.LabelField(
-                new Rect(x, y, Screen.width - x * 2, 16), "Frame Index", spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetIndex(animStripGUI.currentCellKey).ToString() + " (" + (spriteSheet.GetRow(spriteSheetGUI.currentRowKey).cells.Length - 1).ToString() + ")");
+                new Rect(x, y, Screen.width - x * 2, 16), "Frame Index", spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetIndex(animStripGUI.currentCellKey).ToString() + 
+				" (" + (spriteSheet.GetRow(spriteSheetGUI.currentRowKey).cells.Length - 1).ToString() + ")"
+				+ (selectedCell.importAssetPath == "" ? "" : (" - " + selectedCell.importAssetPath)));
 			y += 20;
-
+			
+				
 			spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).delay =
                 EditorGUI.IntField(
                 new Rect(x, y, Mathf.Min(200, Screen.width - x * 2), 16), "Frame Time", (int)spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).delay);
@@ -443,8 +455,10 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 				newTexture = (Texture2D)EditorGUILayout.ObjectField(" ", newTexture, typeof(Texture2D), false);
 
 				GUILayout.BeginVertical();
+				y += 10;
 				if(GUI.Button(new Rect(x + 240f, y, 180f, 19f), "Import to selected frame"))
 				{
+				
 					if(newTexture != null)
 					{
 						ImportSprite(SpriteSheetImportTarget.Selected);
@@ -485,7 +499,51 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 
 				GUILayout.EndHorizontal();
 			}
-
+			
+			// Update references to sprites
+			y += 20;
+			
+			showUpdateFoldout = EditorGUI.Foldout(new Rect(x, y, Screen.width - x * 2, 16), showUpdateFoldout, "Update");
+			if (showUpdateFoldout)
+			{
+				y += 20;
+				
+				GUILayout.BeginVertical();
+				if(GUI.Button(new Rect(5, y, 180f, 19f), "Update Selected Frame"))
+				{
+					if(newTexture != null)
+					{
+						UpdateSprite(SpriteSheetUpdateTarget.SelectedFrame);
+					}
+				}
+				/*
+				if(GUI.Button(new Rect(190, y, 180f, 19f), "Save Frame to Source"))
+				{
+					if(newTexture != null)
+					{
+						
+					}
+				}
+				*/
+				y += 21;
+				if(GUI.Button(new Rect(5, y, 180f, 19f), "Update Selected Sprite"))
+				{
+					if(newTexture != null)
+					{
+						UpdateSprite(SpriteSheetUpdateTarget.SelectedSprite);
+					}
+				}
+				
+				y += 21;
+				if(GUI.Button(new Rect(5, y, 180f, 19f), "Update All Sprites"))
+				{
+					if(newTexture != null)
+					{
+						UpdateSprite(SpriteSheetUpdateTarget.AllSprites);
+					}
+				}
+				GUILayout.EndVertical();
+			}
 
 			int oldRowKey = spriteSheetGUI.currentRowKey;
 			animStripGUI.HandleGUIEvent(Event.current);
@@ -546,13 +604,79 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 		spriteSheetGUI.CleanExit();
 		animStripGUI.CleanExit();
 	}
+	
+	public void UpdateSprite(SpriteSheetUpdateTarget target)
+	{
+		Texture2D spritesheetTexture = spriteSheet.atlas.GetTexture("_MainTex") as Texture2D;
+		
+		switch(target)
+		{
+			case SpriteSheetUpdateTarget.SelectedSprite:
+			{
+				RagePixelRow row = spriteSheet.GetRow(spriteSheetGUI.currentRowKey);
+			
+				foreach (RagePixelCell cell in row.cells)
+				{
+					UpdateCell(cell, spritesheetTexture);
+				}
+				break;
+			}
+			case SpriteSheetUpdateTarget.SelectedFrame:
+			{
+				UpdateCell(spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey), spritesheetTexture);
+				break;
+			}
+			case SpriteSheetUpdateTarget.AllSprites:
+			{
+				foreach (RagePixelRow row in spriteSheet.rows)
+				{
+					foreach (RagePixelCell cell in row.cells)
+					{
+						UpdateCell(cell, spritesheetTexture);
+					}
+				}
+				break;
+			}
+		}
+		
+		RagePixelUtil.SaveSpritesheetTextureToDisk(spriteSheet);
+		RagePixelUtil.RebuildAtlas(spriteSheet, true, "save after update");
+
+		spriteSheetGUI.isDirty = true;
+		animStripGUI.isDirty = true;
+
+		if(inspector != null)
+		{
+			inspector.animStripGUI.isDirty = true;
+			inspector.spriteSheetGUI.isDirty = true;
+		}
+	}
+	
+	public void UpdateCell(RagePixelCell cell, Texture2D spritesheetTexture)
+	{
+		if (cell.importAssetPath != "")
+		{
+			Texture2D textureAsset = AssetDatabase.LoadAssetAtPath(cell.importAssetPath, typeof(Texture2D)) as Texture2D;
+			
+			if (textureAsset)
+			{	
+				RagePixelUtil.CopyPixels(textureAsset, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, cell.uv);
+			}
+			else
+			{
+				Debug.LogWarning("Frame has reference to '" + cell.importAssetPath + "' but it does not exist");
+			}
+		}
+	}
 
 	public void ImportSprite(SpriteSheetImportTarget target)
 	{
 		string path = AssetDatabase.GetAssetPath(newTexture);
+		Debug.Log("Path" + path);
 		TextureImporter textureImporter = AssetImporter.GetAtPath(path) as TextureImporter;
 		textureImporter.isReadable = true;
 		textureImporter.filterMode = FilterMode.Point;
+		textureImporter.npotScale = TextureImporterNPOTScale.None;
 		textureImporter.textureFormat = TextureImporterFormat.AutomaticTruecolor;
 		AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
 
@@ -583,6 +707,7 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
                 {
                     RagePixelRow row = spriteSheet.AddRow(newKey, newTexture.width, newTexture.height);
                     row.InsertCell(0, newKey2);
+					row.GetCell(0).importAssetPath = path;
 
                     spriteSheetGUI.currentRowKey = newKey;
                     animStripGUI.currentCellKey = newKey2;
@@ -597,7 +722,7 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
                 {
                     RagePixelRow row = spriteSheet.GetRow(spriteSheetGUI.currentRowKey);
                     int index = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetIndex(animStripGUI.currentCellKey) + 1;
-                    row.InsertCell(index, newKey2);
+                    row.InsertCell(index, newKey2).importAssetPath = path;
 
                     animStripGUI.currentCellKey = newKey2;
 
@@ -609,8 +734,10 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
                 }
                 case SpriteSheetImportTarget.Selected: 
                 {
-                    Rect uvs = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
+					RagePixelCell cell = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey);
+                    Rect uvs = cell.uv;
                     RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs);
+					cell.importAssetPath = path;
                     break;
                 }
 			}

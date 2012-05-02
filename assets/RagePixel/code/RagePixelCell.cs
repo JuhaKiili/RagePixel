@@ -9,6 +9,8 @@ public class RagePixelCell
 	public int key;
 	public Rect uv;
 	public int delay;
+	
+	public string importAssetPath;
 
 	public void ClearUndoHistory()
 	{
