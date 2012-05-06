@@ -10,7 +10,7 @@ public class RagePixelCell
 	public Rect uv;
 	public int delay;
 	
-	public string importAssetPath;
+	public string importAssetPath = "";
 
 	public void ClearUndoHistory()
 	{
