@@ -672,7 +672,7 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 	public void ImportSprite(SpriteSheetImportTarget target)
 	{
 		string path = AssetDatabase.GetAssetPath(newTexture);
-		Debug.Log("Path" + path);
+		
 		TextureImporter textureImporter = AssetImporter.GetAtPath(path) as TextureImporter;
 		textureImporter.isReadable = true;
 		textureImporter.filterMode = FilterMode.Point;
@@ -706,14 +706,13 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
                 case SpriteSheetImportTarget.NewSprite: 
                 {
                     RagePixelRow row = spriteSheet.AddRow(newKey, newTexture.width, newTexture.height);
-                    row.InsertCell(0, newKey2);
-					row.GetCell(0).importAssetPath = path;
+                    row.InsertCell(0, newKey2).importAssetPath = path;
 
                     spriteSheetGUI.currentRowKey = newKey;
                     animStripGUI.currentCellKey = newKey2;
 
                     RagePixelUtil.RebuildAtlas(spriteSheet, true, "Import texture as new sprite");
-
+				
                     Rect uvs = spriteSheet.GetRow(spriteSheetGUI.currentRowKey).GetCell(animStripGUI.currentCellKey).uv;
                     RagePixelUtil.CopyPixels(newTexture, new Rect(0f, 0f, 1f, 1f), spritesheetTexture, uvs);
                     break;
