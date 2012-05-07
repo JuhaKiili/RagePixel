@@ -511,10 +511,7 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 				GUILayout.BeginVertical();
 				if(GUI.Button(new Rect(5, y, 180f, 19f), "Update Selected Frame"))
 				{
-					if(newTexture != null)
-					{
-						UpdateSprite(SpriteSheetUpdateTarget.SelectedFrame);
-					}
+					UpdateSprite(SpriteSheetUpdateTarget.SelectedFrame);
 				}
 				/*
 				if(GUI.Button(new Rect(190, y, 180f, 19f), "Save Frame to Source"))
@@ -528,19 +525,13 @@ public class RagePixelSpriteSheetEditorWindow : EditorWindow
 				y += 21;
 				if(GUI.Button(new Rect(5, y, 180f, 19f), "Update Selected Sprite"))
 				{
-					if(newTexture != null)
-					{
-						UpdateSprite(SpriteSheetUpdateTarget.SelectedSprite);
-					}
+					UpdateSprite(SpriteSheetUpdateTarget.SelectedSprite);
 				}
 				
 				y += 21;
 				if(GUI.Button(new Rect(5, y, 180f, 19f), "Update All Sprites"))
 				{
-					if(newTexture != null)
-					{
-						UpdateSprite(SpriteSheetUpdateTarget.AllSprites);
-					}
+					UpdateSprite(SpriteSheetUpdateTarget.AllSprites);
 				}
 				GUILayout.EndVertical();
 			}
