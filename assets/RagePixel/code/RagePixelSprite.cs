@@ -1067,9 +1067,9 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 				if(frameMode == FrameMode.Range)
 				{
 					return
-						GetCurrentRow().GetIndex(currentCellKey) < GetCurrentRow().cells.Length - 1 &&
-						animationMaxIndex < 0 ||
-						GetCurrentRow().GetIndex(currentCellKey) < animationMaxIndex;
+						(GetCurrentRow().GetIndex(currentCellKey) >= GetCurrentRow().cells.Length &&
+						 animationMaxIndex < 0) ||
+						GetCurrentRow().GetIndex(currentCellKey) >= animationMaxIndex;
 				}
 				else if(frameMode == FrameMode.Sequence)
 				{
@@ -1081,7 +1081,7 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 				if(frameMode == FrameMode.Range)
 				{
 					return
-						 GetCurrentRow().GetIndex(currentCellKey) > Mathf.Max(animationMinIndex, 0);
+						 GetCurrentRow().GetIndex(currentCellKey) <= Mathf.Max(animationMinIndex, 0);
 				}
 				else if(frameMode == FrameMode.Sequence)
 				{
@@ -1095,9 +1095,9 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 					if(frameMode == FrameMode.Range)
 					{
 						return
-							GetCurrentRow().GetIndex(currentCellKey) < GetCurrentRow().cells.Length - 1 &&
-							animationMaxIndex < 0 ||
-							GetCurrentRow().GetIndex(currentCellKey) < animationMaxIndex;
+							(GetCurrentRow().GetIndex(currentCellKey) >= GetCurrentRow().cells.Length &&
+							 animationMaxIndex < 0) ||
+							GetCurrentRow().GetIndex(currentCellKey) >= animationMaxIndex;
 					}
 					else if(frameMode == FrameMode.Sequence)
 					{
@@ -1110,7 +1110,7 @@ public class RagePixelSprite : MonoBehaviour, IRagePixel {
 					if(frameMode == FrameMode.Range)
 					{
 						return
-							GetCurrentRow().GetIndex(currentCellKey) > Mathf.Max(animationMinIndex, 0);
+							GetCurrentRow().GetIndex(currentCellKey) <= Mathf.Max(animationMinIndex, 0);
 					}
 					else if(frameMode == FrameMode.Sequence)
 					{
