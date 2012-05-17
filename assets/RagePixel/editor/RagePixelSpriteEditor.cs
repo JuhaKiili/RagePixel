@@ -690,7 +690,7 @@ public class RagePixelSpriteEditor : Editor
                         minY + texel.Y);
                     
 				}
-				else
+				else if(Event.current.button == 1)
 				{
 					paintColorPickerGUI.selectedColor = spritesheetTexture.GetPixel(
                         minX + texel.X,
@@ -713,8 +713,11 @@ public class RagePixelSpriteEditor : Editor
 					replaceColorPickerGUI.selectedColor = paintColorPickerGUI.selectedColor;
 				}
 			}
-
-			Event.current.Use();
+			
+			if(Event.current.button == 0 || Event.current.button == 1)
+			{
+				Event.current.Use();
+			}
 		}
 	}
 
@@ -759,7 +762,7 @@ public class RagePixelSpriteEditor : Editor
                         minY + texel.Y);
 					}
 				}
-				else
+				else if(Event.current.button == 1)
 				{
 					paintColorPickerGUI.selectedColor = spritesheetTexture.GetPixel(
                         minX + texel.X,
@@ -775,7 +778,11 @@ public class RagePixelSpriteEditor : Editor
 					replaceColorPickerGUI.selectedColor = paintColorPickerGUI.selectedColor;
 				}
 			}
-			Event.current.Use();
+			
+			if(Event.current.button == 0 || Event.current.button == 1)
+			{
+				Event.current.Use();
+			}
 		}
 	}
 
@@ -818,7 +825,7 @@ public class RagePixelSpriteEditor : Editor
 						}
 					}
 				}
-				if(Event.current.type == EventType.mouseDrag)
+				if(Event.current.type == EventType.mouseDrag && Event.current.button == 0)
 				{
 					if(selectionActive)
 					{
@@ -839,7 +846,7 @@ public class RagePixelSpriteEditor : Editor
 				}
 				if(Event.current.type == EventType.mouseUp && !selectionActive)
 				{
-					if(selection.Width() > 1 || selection.Height() > 1)
+					if(selection != null && selection.Width() > 1 || selection.Height() > 1)
 					{
 						SavePaintUndo();
 
@@ -871,13 +878,13 @@ public class RagePixelSpriteEditor : Editor
 			}
 			else
 			{
-				if(Event.current.type != EventType.mouseDrag)
+				if(Event.current.type != EventType.mouseDrag && Event.current.button == 0) // left click outside the sprite
 				{
 					mode = Mode.Default;
 				}
 
 			}
-			if(Event.current.type != EventType.mouseUp)
+			if(Event.current.type != EventType.mouseUp && (Event.current.button == 0 || Event.current.button == 1))
 			{
 				Event.current.Use();
 			}
@@ -931,6 +938,11 @@ public class RagePixelSpriteEditor : Editor
 					RagePixelUtil.RebuildAtlas(ragePixelSprite.spriteSheet, isGrowing, "resize");
 				}
 			}
+		}
+		
+		if(Event.current.button == 0 || Event.current.button == 1)
+		{
+			Event.current.Use();
 		}
 	}
 
@@ -1235,9 +1247,10 @@ public class RagePixelSpriteEditor : Editor
 				}
 				else
 				{
-					if(Event.current.type == EventType.mouseDown && mode == Mode.Default)
+					if(Event.current.type == EventType.mouseDown && mode == Mode.Default && Event.current.button == 0)
 					{
 						animStripGUI.visible = false;
+						Event.current.Use();
 					}
 				}
 			}
@@ -1246,115 +1259,126 @@ public class RagePixelSpriteEditor : Editor
 
 	public void HandleKeyboard()
 	{
-		if(Event.current.keyCode == KeyCode.Alpha1)
+		if (Event.current.type == EventType.keyDown)
 		{
-			brushType = BrushType.Brush1;
-		}
-		if(Event.current.keyCode == KeyCode.Alpha2)
-		{
-			brushType = BrushType.Brush3;
-		}
-		if(Event.current.keyCode == KeyCode.Alpha3)
-		{
-			brushType = BrushType.Brush5;
-		}
-		if(Event.current.keyCode == KeyCode.RightBracket)
-		{
-			brushType = (BrushType)((int)brushType < 2 ? (int)brushType + 1 : 0);
-		}
-		if(Event.current.keyCode == KeyCode.LeftBracket)
-		{
-			brushType = (BrushType)((int)brushType > 0 ? (int)brushType - 1 : 2);
-		}
-		if(Event.current.keyCode == KeyCode.RightArrow && (Event.current.control || Event.current.command) && Event.current.type == EventType.keyDown)
-		{
-			selection = null;
-			selectionActive = false;
-			ragePixelSprite.shiftCell(1, true);
-			ragePixelSprite.refreshMesh();
-			animStripGUI.isDirty = true;
-			Event.current.Use();
-		}
-		if(Event.current.keyCode == KeyCode.LeftArrow && (Event.current.control || Event.current.command) && Event.current.type == EventType.keyDown)
-		{
-			selection = null;
-			selectionActive = false;
-			ragePixelSprite.shiftCell(-1, true);
-			ragePixelSprite.refreshMesh();
-			animStripGUI.isDirty = true;
-			Event.current.Use();
-		}
-		if(Event.current.keyCode == KeyCode.Z && (Event.current.control || Event.current.command) && Event.current.alt && Event.current.type == EventType.keyDown)
-		{
-			DoPaintUndo();
-			animStripGUI.isDirty = true;
-			spriteSheetGUI.isDirty = true;
-			atlasTextureIsDirty = true;
-			Event.current.Use();
-		}
-		if(Event.current.keyCode == KeyCode.D && (Event.current.control || Event.current.command) && Event.current.alt && Event.current.type == EventType.keyDown && mode == Mode.Select)
-		{
-			backBuffer.PasteBitmap(selection.X, selection.Y, frontBuffer);
-			animStripGUI.isDirty = true;
-			spriteSheetGUI.isDirty = true;
-			atlasTextureIsDirty = true;
-			Event.current.Use();
-		}
-		if(Event.current.keyCode == KeyCode.X && (Event.current.control || Event.current.command) && Event.current.alt && Event.current.type == EventType.keyDown && mode == Mode.Select)
-		{
-			SavePaintUndo();
-			RagePixelUtil.Settings.clipboard = new RagePixelBitmap(frontBuffer.pixels, frontBuffer.Width(), frontBuffer.Height());
-			selectionActive = false;
-			Rect currentUV = ragePixelSprite.GetCurrentCell().uv;
-			Rect selectionUV = new Rect(
-                currentUV.xMin + (float)selection.X / (float)spritesheetTexture.width,
-                currentUV.yMin + (float)selection.Y / (float)spritesheetTexture.height,
-                (float)(selection.X2 - selection.X + 1) / (float)spritesheetTexture.width,
-                (float)(selection.Y2 - selection.Y + 1) / (float)spritesheetTexture.height
-                );
-			RagePixelUtil.clearPixels(spritesheetTexture, selectionUV);
-			spritesheetTexture.Apply();
-			atlasTextureIsDirty = true;
-
-			selection = null;
-			Event.current.Use();
-		}
-		if(Event.current.keyCode == KeyCode.C && (Event.current.control || Event.current.command) && Event.current.alt && Event.current.type == EventType.keyDown && mode == Mode.Select)
-		{
-			RagePixelUtil.Settings.clipboard = new RagePixelBitmap(frontBuffer.pixels, frontBuffer.Width(), frontBuffer.Height());
-			selection = null;
-			selectionActive = false;
-			Event.current.Use();
-		}
-		if(Event.current.keyCode == KeyCode.V && (Event.current.control || Event.current.command) && Event.current.alt && Event.current.type == EventType.keyDown)
-		{
-			if(RagePixelUtil.Settings.clipboard != null)
+			if(Event.current.keyCode == KeyCode.Alpha1)
 			{
-				mode = Mode.Select;
-
-				SavePaintUndo();
-
-				Rect spriteUV = ragePixelSprite.GetCurrentCell().uv;
-
-				selection = new RagePixelTexelRect(
-                    0,
-                    0,
-                    Mathf.Min(RagePixelUtil.Settings.clipboard.Width(), ragePixelSprite.GetCurrentRow().pixelSizeX),
-                    Mathf.Min(RagePixelUtil.Settings.clipboard.Height(), ragePixelSprite.GetCurrentRow().pixelSizeY)
-                    );
-
-				backBuffer = GrabSprite(spriteUV);
-				frontBuffer = RagePixelUtil.Settings.clipboard;
-
-				frontBufferPosition = new RagePixelTexel(0, 0);
-				frontBufferDragStartPosition = new RagePixelTexel(0, 0);
-
-				PasteBitmapToSpritesheetAlpha(frontBufferPosition, spriteUV, frontBuffer);
-
-				selectionActive = true;
-				spritesheetTexture.Apply();
-
+				brushType = BrushType.Brush1;
 				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.Alpha2)
+			{
+				brushType = BrushType.Brush3;
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.Alpha3)
+			{
+				brushType = BrushType.Brush5;
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.RightBracket)
+			{
+				brushType = (BrushType)((int)brushType < 2 ? (int)brushType + 1 : 0);
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.LeftBracket)
+			{
+				brushType = (BrushType)((int)brushType > 0 ? (int)brushType - 1 : 2);
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.RightArrow && (Event.current.control || Event.current.command))
+			{
+				selection = null;
+				selectionActive = false;
+				ragePixelSprite.shiftCell(1, true);
+				ragePixelSprite.refreshMesh();
+				animStripGUI.isDirty = true;
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.LeftArrow && (Event.current.control || Event.current.command))
+			{
+				selection = null;
+				selectionActive = false;
+				ragePixelSprite.shiftCell(-1, true);
+				ragePixelSprite.refreshMesh();
+				animStripGUI.isDirty = true;
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.Z && (Event.current.control || Event.current.command) && Event.current.alt)
+			{
+				DoPaintUndo();
+				animStripGUI.isDirty = true;
+				spriteSheetGUI.isDirty = true;
+				atlasTextureIsDirty = true;
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.D && (Event.current.control || Event.current.command) && Event.current.alt && mode == Mode.Select)
+			{
+				if (selectionActive)
+				{
+					backBuffer.PasteBitmap(selection.X, selection.Y, frontBuffer);
+					animStripGUI.isDirty = true;
+					spriteSheetGUI.isDirty = true;
+					atlasTextureIsDirty = true;
+				}
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.X && (Event.current.control || Event.current.command) && Event.current.alt && mode == Mode.Select)
+			{
+				SavePaintUndo();
+				RagePixelUtil.Settings.clipboard = new RagePixelBitmap(frontBuffer.pixels, frontBuffer.Width(), frontBuffer.Height());
+				selectionActive = false;
+				Rect currentUV = ragePixelSprite.GetCurrentCell().uv;
+				Rect selectionUV = new Rect(
+	                currentUV.xMin + (float)selection.X / (float)spritesheetTexture.width,
+	                currentUV.yMin + (float)selection.Y / (float)spritesheetTexture.height,
+	                (float)(selection.X2 - selection.X + 1) / (float)spritesheetTexture.width,
+	                (float)(selection.Y2 - selection.Y + 1) / (float)spritesheetTexture.height
+	                );
+				RagePixelUtil.clearPixels(spritesheetTexture, selectionUV);
+				spritesheetTexture.Apply();
+				atlasTextureIsDirty = true;
+	
+				selection = null;
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.C && (Event.current.control || Event.current.command) && Event.current.alt && mode == Mode.Select)
+			{
+				RagePixelUtil.Settings.clipboard = new RagePixelBitmap(frontBuffer.pixels, frontBuffer.Width(), frontBuffer.Height());
+				selection = null;
+				selectionActive = false;
+				Event.current.Use();
+			}
+			if(Event.current.keyCode == KeyCode.V && (Event.current.control || Event.current.command) && Event.current.alt)
+			{
+				if(RagePixelUtil.Settings.clipboard != null)
+				{
+					mode = Mode.Select;
+	
+					SavePaintUndo();
+	
+					Rect spriteUV = ragePixelSprite.GetCurrentCell().uv;
+	
+					selection = new RagePixelTexelRect(
+	                    0,
+	                    0,
+	                    Mathf.Min(RagePixelUtil.Settings.clipboard.Width(), ragePixelSprite.GetCurrentRow().pixelSizeX),
+	                    Mathf.Min(RagePixelUtil.Settings.clipboard.Height(), ragePixelSprite.GetCurrentRow().pixelSizeY)
+	                    );
+	
+					backBuffer = GrabSprite(spriteUV);
+					frontBuffer = RagePixelUtil.Settings.clipboard;
+	
+					frontBufferPosition = new RagePixelTexel(0, 0);
+					frontBufferDragStartPosition = new RagePixelTexel(0, 0);
+	
+					PasteBitmapToSpritesheetAlpha(frontBufferPosition, spriteUV, frontBuffer);
+	
+					selectionActive = true;
+					spritesheetTexture.Apply();
+	
+					Event.current.Use();
+				}
 			}
 		}
 	}
