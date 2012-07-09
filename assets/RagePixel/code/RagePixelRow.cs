@@ -225,8 +225,20 @@ public class RagePixelRow
 	{
 		if(animations.Length > 0)
 		{
-			Array.Resize(ref _animations, animations.Length - 1);
+            if(index != animations.Length-1) 
+            {
+                RagePixelAnimation[] dest = Array.CreateInstance(animations.GetType().GetElementType(), animations.Length - 1) as RagePixelAnimation[];
+                Array.Copy(animations, 0, dest, 0, index);
+                Array.Copy(animations, index + 1, dest, index, animations.Length - index - 1);
+                animations = dest;
+            }
+            else
+            {
+			    Array.Resize(ref _animations, animations.Length - 1);
+            }
 		}
+
+        Debug.Log("RmoveAnimation : "+animations.Length);
 	}
 
 	public RagePixelAnimation GetAnimationByName(string name)
