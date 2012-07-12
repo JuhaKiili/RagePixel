@@ -237,8 +237,6 @@ public class RagePixelRow
 			    Array.Resize(ref _animations, animations.Length - 1);
             }
 		}
-
-        Debug.Log("RmoveAnimation : "+animations.Length);
 	}
 
 	public RagePixelAnimation GetAnimationByName(string name)
