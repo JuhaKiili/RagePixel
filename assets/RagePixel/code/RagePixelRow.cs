@@ -11,7 +11,7 @@ public class RagePixelRow
 	public int newPixelSizeX;
 	public int newPixelSizeY;
 	public int key;
-	public string name;
+	public string name = "";
 	[HideInInspector]
 	public string fontCharacter = "";
 	[HideInInspector]
