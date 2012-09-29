@@ -16,5 +16,10 @@ public class RagePixelTexel
 		X = _x;
 		Y = _y;
 	}
+
+    public static RagePixelTexel operator +(RagePixelTexel a, RagePixelTexel b)
+    {
+        return new RagePixelTexel(a.X + b.X, a.Y + b.Y);
+    }
 }
 
