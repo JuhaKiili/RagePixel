@@ -742,7 +742,7 @@ public class RagePixelSpriteEditor : Editor
 				{
 					Color fillTargetColor = spritesheetTexture.GetPixel(minX + texel.X, minY + texel.Y);
 
-					if(!fillTargetColor.Equals(paintColorPickerGUI.selectedColor))
+                    if (!SameColor(fillTargetColor, paintColorPickerGUI.selectedColor))
 					{
 						SavePaintUndo();
 						atlasTextureIsDirty = true;
@@ -1661,23 +1661,43 @@ public class RagePixelSpriteEditor : Editor
 		}
 	}
 
-	public void FloodFill(Color oldColor, Color color, Texture2D tex, int fX, int fY, int minX, int minY, int maxX, int maxY)
-	{
-		tex.SetPixel(fX, fY, color);
-		for(int y = Mathf.Max(fY - 1, minY); y <= Mathf.Min(fY + 1, maxY); y++)
-		{
-			for(int x = Mathf.Max(fX - 1, minX); x <= Mathf.Min(fX + 1, maxX); x++)
-			{
-				if(x == fX || y == fY)
-				{
-					if(tex.GetPixel(x, y).Equals(oldColor))
-					{
-						FloodFill(oldColor, color, tex, x, y, minX, minY, maxX, maxY);
-					}
-				}
-			}
-		}
-	}
+    private static bool SameColor(Color a, Color b)
+    {
+        const float epsilon = 0.01f;
+        return Mathf.Abs(a.r - b.r) < epsilon && Mathf.Abs(a.g - b.g) < epsilon && Mathf.Abs(a.b - b.b) < epsilon &&
+               Mathf.Abs(a.a - b.a) < epsilon;
+    }
+
+    public void FloodFill(Color oldColor, Color color, Texture2D tex, int fX, int fY, int minX, int minY, int maxX,
+                          int maxY)
+    { //stack-happy non-recursive floodfill
+        if (SameColor(oldColor, color)) //just in case.
+            return;
+
+        int width = maxX - minX;
+        int height = maxY - minY;
+
+        Color[] colors = tex.GetPixels(minX, minY, width, height); //store the colors into a temporary buffer
+
+        Stack<RagePixelTexel> stack = new Stack<RagePixelTexel>(); //non-recursive stack
+        stack.Push(new RagePixelTexel(fX, fY)); //original target
+        while (stack.Count > 0)
+        {
+            RagePixelTexel n = stack.Pop();
+            int index = (n.Y - minY) * width + (n.X - minX); //index into temporary buffer
+            if ((n.X >= minX && n.X < maxX && n.Y >= minY && n.Y < maxY) && //is the pixel in the sprite
+                SameColor(colors[index], oldColor))  //do we want to fill it?
+            {
+                colors[index] = color;
+                stack.Push(n + new RagePixelTexel(-1, 0));  //
+                stack.Push(n + new RagePixelTexel(1, 0));   // add to stack in all 4 directions
+                stack.Push(n + new RagePixelTexel(0, 1));   //
+                stack.Push(n + new RagePixelTexel(0, -1));  //
+            }
+        }
+
+        tex.SetPixels(minX, minY, width, height, colors); //put the temporary buffer back into the texture
+    }
         
 	public Color[] getScaledImage(Texture2D src, int width, int height, Color bgColor)
 	{
