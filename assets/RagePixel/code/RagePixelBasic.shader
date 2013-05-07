@@ -53,8 +53,8 @@ Shader "RagePixel/Basic" {
 				OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
 
 				// Snapping params
-				float hpcX = _ScreenParams.x * 0.5;
-				float hpcY = _ScreenParams.y * 0.5;
+				float hpcX = floor(_ScreenParams.x * 0.5);
+				float hpcY = floor(_ScreenParams.y * 0.5);
 			#ifdef UNITY_HALF_TEXEL_OFFSET
 				float hpcOX = -0.5;
 				float hpcOY = 0.5;
