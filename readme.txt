@@ -13,7 +13,6 @@ http://ragepixel.com/forum
 
 Contact me directly:
 Twitter: @JuhaKiili
-E-mail: juha@juhakiili.com
 
 RagePixel is now released under MIT license
 
